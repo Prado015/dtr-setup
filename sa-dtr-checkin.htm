@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SA DTR — Check In/Out | Procurement</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="page-checkin">
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(37,99,235,0.2);border-top-color:var(--primary);display:block;"></div>
+    <p class="loading-text">Verifying session...</p>
+  </div>
+
+  <!-- Animated Background -->
+  <div class="bg-container">
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-user">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div>
+        <div class="user-name" id="user-display-name">Loading...</div>
+        <div class="user-id"   id="user-display-id">—</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="datetime-badge" id="top-clock"></div>
+      <button class="btn-sm btn-admin" id="admin-link-btn"
+              onclick="window.location.href='sa-dtr-admin.html'" style="display:none">
+        📊 Admin Panel
+      </button>
+      <button class="btn-sm btn-logout" onclick="handleLogout()">← Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="main-wrap">
+    <div class="card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="card-logo">
+          <img src="logo.png" alt="Logo" onerror="this.parentElement.textContent='📋'">
+        </div>
+        <h1 class="card-title" id="card-title-text">DTR Check-In / Out</h1>
+        <p class="card-subtitle">Procurement Department</p>
+        <div class="current-date" id="current-date"></div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body">
+
+        <!-- Active Shift Status -->
+        <div class="active-shift-panel" id="active-panel">
+          <div class="active-shift-label">🟢 Currently On Duty</div>
+          <div class="active-shift-name" id="active-shift-name"></div>
+          <div class="active-shift-meta" id="active-shift-meta"></div>
+          <div class="elapsed-timer"     id="elapsed-timer">00:00:00</div>
+        </div>
+
+        <!-- Alert Box -->
+        <div class="alert" id="alert-box"></div>
+
+        <!-- Your ID (read-only) -->
+        <div class="form-group">
+          <label class="form-label">Your ID</label>
+          <input type="text" id="person-id" class="form-input" readonly title="Your employee ID">
+        </div>
+
+        <!-- Department (read-only) -->
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input type="text" class="form-input" value="Procurement" readonly title="Department">
+        </div>
+
+        <!-- Shift Type -->
+        <div class="form-group">
+          <label class="form-label" for="shift-type">Shift Type</label>
+          <select id="shift-type" class="form-select" title="Select your shift type">
+            <option value="">Select Shift</option>
+            <!-- Populated dynamically via checkin.script.js -->
+          </select>
+        </div>
+
+        <!-- Custom Schedule (shown for Broken Schedule shifts) -->
+        <div class="custom-schedule" id="custom-schedule">
+          <div class="form-label" style="color:var(--warning)">📋 Custom Schedule Times</div>
+          <div class="custom-grid" style="margin-top:0.5rem">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Start Time</label>
+              <input type="time" id="custom-start" class="form-input" title="Enter your custom shift start time">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">End Time</label>
+              <input type="time" id="custom-end" class="form-input" title="Enter your custom shift end time">
+            </div>
+          </div>
+          <div class="custom-note">
+            ℹ️ Late calculation will be based on your specified start time.
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="btn-row">
+          <button class="btn-action btn-checkin"  id="checkin-btn"  onclick="handleAction('checkin')">
+            ✓ Check In
+          </button>
+          <button class="btn-action btn-checkout" id="checkout-btn" onclick="handleAction('checkout')">
+            ↩ Check Out
+          </button>
+        </div>
+
+        <!-- Today's Records -->
+        <div class="my-records">
+          <div class="my-records-title">📋 Today's Records</div>
+          <div id="records-list"><div class="no-records">Loading...</div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Config (shared) -->
+  <script src="firebase.config.js"></script>
+
+  <!-- Page Script -->
+  <script src="checkin.script.js"></script>
+
+</body>
+</html>

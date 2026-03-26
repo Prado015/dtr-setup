@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SA DTR — Login | Procurement</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="page-login">
+
+  <!-- Animated Background -->
+  <div class="bg-container">
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <!-- Header -->
+      <div class="login-header">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="UB Procurement Logo">
+        </div>
+        <h1 class="login-title">DTR SYSTEM</h1>
+        <p class="login-subtitle">Procurement Department</p>
+      </div>
+
+      <!-- Role Toggle -->
+      <div class="role-toggle">
+        <button class="role-btn active" id="role-sa"    onclick="setRole('sa')">Student Assistant</button>
+        <button class="role-btn"        id="role-staff" onclick="setRole('staff')">Procurement Staff</button>
+      </div>
+
+      <!-- Alerts -->
+      <div class="alert alert-error" id="error-alert"></div>
+      <div class="alert alert-info"  id="info-alert"></div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-input"
+               placeholder="your.email@s.ubaguio.edu" autocomplete="email">
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input type="password" id="password" class="form-input"
+                 placeholder="Enter password" autocomplete="current-password">
+          <button class="toggle-pass" onclick="togglePassword()" type="button">👁</button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-login" id="login-btn" onclick="handleLogin()">
+        <span class="btn-text">🔐 Sign In</span>
+        <div class="spinner"></div>
+      </button>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <strong>Procurement Department</strong><br>
+        University of Baguio • DTR System<br>
+        <small>Contact your admin if you don't have an account</small>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase Config (shared) -->
+  <script src="firebase.config.js"></script>
+
+  <!-- Page Script -->
+  <script src="index.script.js"></script>
+
+</body>
+</html>

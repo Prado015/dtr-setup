@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DTR System Setup — Procurement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; font-weight: 800; color: #60a5fa; margin-bottom: 0.25rem; }
+    .subtitle { color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem; }
+    .warning-box {
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.4);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      color: #fbbf24;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .card {
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 1.1rem; font-weight: 700; color: #a5b4fc; margin-bottom: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    label { font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    input, select {
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    input:focus, select:focus { outline: none; border-color: #6366f1; }
+    input::placeholder { color: #475569; }
+    .btn {
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-blue  { background: #3b82f6; color: #fff; }
+    .btn-green { background: #10b981; color: #fff; }
+    .btn-red   { background: #ef4444; color: #fff; margin-top: 0.5rem; }
+    .log-box {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+      min-height: 120px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+    .log-success { color: #34d399; }
+    .log-error   { color: #f87171; }
+    .log-info    { color: #60a5fa; }
+    .log-warn    { color: #fbbf24; }
+    .divider { border: none; border-top: 1px solid rgba(99,102,241,0.15); margin: 1.5rem 0; }
+    .step-badge {
+      display: inline-block;
+      background: #6366f1;
+      color: #fff;
+      border-radius: 50%;
+      width: 24px; height: 24px;
+      text-align: center;
+      line-height: 24px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-right: 0.5rem;
+    }
+    .section-title { font-size: 1.05rem; font-weight: 700; color: #c7d2fe; margin-bottom: 1rem; display: flex; align-items: center; }
+    .full-width { grid-column: 1 / -1; }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>🔧 DTR System — First-Time Setup</h1>
+  <p class="subtitle">Procurement Department · University of Baguio · One-time Firestore bootstrap tool</p>
+
+  <div class="warning-box">
+    ⚠️ <strong>Important:</strong> Use this page only once to set up Firestore profiles for existing Firebase Auth users.
+    After setup is complete, <strong>delete this file from your hosting</strong> (Netlify) for security.
+    You must be signed in as an admin user to use this tool.
+  </div>
+
+  <!-- STEP 1: Sign In -->
+  <div class="card">
+    <div class="section-title"><span class="step-badge">1</span> Sign In as Admin</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="email" id="setup-email" placeholder="rcprado111@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="setup-password" placeholder="Your password">
+      </div>
+    </div>
+    <button class="btn btn-blue" onclick="setupSignIn()">🔐 Sign In</button>
+    <div id="auth-status" style="margin-top:0.75rem;font-size:0.85rem;color:#94a3b8;"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEP 2: Create Admin/Staff Firestore Profile -->
+  <div class="card">
+    <div class="section-title"><span class="step-badge">2</span> Create Admin / Staff Profile</div>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1rem;">
+      Creates a <code style="color:#a5b4fc">users/{uid}</code> document and a <code style="color:#a5b4fc">staff/{staffId}</code> document for the signed-in admin.
+    </p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="admin-fname" placeholder="First name">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="admin-lname" placeholder="Last name">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Position / Title</label>
+        <input type="text" id="admin-position" placeholder="e.g. Department Admin">
+      </div>
+      <div class="form-group">
+        <label for="admin-role">Role</label>
+        <select id="admin-role" title="Select user role">
+          <option value="admin">Admin (Full access)</option>
+          <option value="staff">Staff (Monitor + check-in)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Staff ID (optional — auto-generated if blank)</label>
+        <input type="text" id="admin-staffid" placeholder="e.g. STF001">
+      </div>
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="text" id="admin-phone" placeholder="+63 9XX XXX XXXX">
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="createAdminProfile()">✅ Create Admin/Staff Profile</button>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEP 3: Create SA Profile -->
+  <div class="card">
+    <div class="section-title"><span class="step-badge">3</span> Add Student Assistant Profile</div>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1rem;">
+      For each existing SA in Firebase Auth — enter their details here to create Firestore documents.
+      The SA must already exist in Firebase Auth (you added them manually).
+    </p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>SA Email (must exist in Firebase Auth)</label>
+        <input type="email" id="sa-email" placeholder="20244509@s.ubaguio.edu">
+      </div>
+      <div class="form-group">
+        <label>SA Password (for verification sign-in)</label>
+        <input type="password" id="sa-password" placeholder="Their current password">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="sa-fname" placeholder="First name">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="sa-lname" placeholder="Last name">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Student Number</label>
+        <input type="text" id="sa-stnum" placeholder="e.g. 2024-4509">
+      </div>
+      <div class="form-group">
+        <label>SA ID (optional — uses student no. if blank)</label>
+        <input type="text" id="sa-id" placeholder="e.g. 20244509">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="text" id="sa-phone" placeholder="+63 9XX XXX XXXX">
+      </div>
+      <div class="form-group">
+        <label>Duty Hours/Week</label>
+        <input type="number" id="sa-dutyhrs" value="5" min="1" max="40" title="Enter duty hours per week">
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="createSAProfile()">✅ Create SA Profile</button>
+    <p style="font-size:0.8rem;color:#fbbf24;margin-top:0.75rem;">
+      ⚠️ This will temporarily sign in as the SA to get their UID, then sign back in as admin.
+      Keep this page open until all SAs are added.
+    </p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STEP 4: Verify Setup -->
+  <div class="card">
+    <div class="section-title"><span class="step-badge">4</span> Verify Setup</div>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1rem;">
+      Check all Firestore documents are correctly created.
+    </p>
+    <button class="btn btn-blue" onclick="verifySetup()">🔍 Verify All Users</button>
+  </div>
+
+  <!-- Log Output -->
+  <div class="log-box" id="log-output">
+    <span class="log-info">// Setup log will appear here...</span>
+  </div>
+
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="firebase.config.js"></script>
+
+<script>
+// ─── Logging ──────────────────────────────────────────────────
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-output');
+  const line = document.createElement('div');
+  line.className = 'log-' + type;
+  const time = new Date().toLocaleTimeString('en-PH', { hour12: true });
+  line.textContent = `[${time}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ─── Step 1: Sign In ──────────────────────────────────────────
+let adminEmail = '', adminPassword = '';
+
+async function setupSignIn() {
+  adminEmail    = document.getElementById('setup-email').value.trim();
+  adminPassword = document.getElementById('setup-password').value;
+  if (!adminEmail || !adminPassword) { log('Please enter email and password.', 'error'); return; }
+
+  try {
+    log('Signing in as ' + adminEmail + '...', 'info');
+    const cred = await auth.signInWithEmailAndPassword(adminEmail, adminPassword);
+    const uid  = cred.user.uid;
+    log('✅ Signed in! UID: ' + uid, 'success');
+    document.getElementById('auth-status').innerHTML =
+      `<span style="color:#34d399">✅ Signed in as ${adminEmail} (UID: ${uid})</span>`;
+  } catch (err) {
+    log('❌ Sign-in failed: ' + err.message, 'error');
+    document.getElementById('auth-status').innerHTML =
+      `<span style="color:#f87171">❌ ${err.message}</span>`;
+  }
+}
+
+// ─── Step 2: Create Admin Profile ─────────────────────────────
+async function createAdminProfile() {
+  const user = auth.currentUser;
+  if (!user) { log('❌ Please sign in first (Step 1).', 'error'); return; }
+
+  const fn  = document.getElementById('admin-fname').value.trim();
+  const ln  = document.getElementById('admin-lname').value.trim();
+  const pos = document.getElementById('admin-position').value.trim() || 'Procurement Staff';
+  const role= document.getElementById('admin-role').value;
+  const ph  = document.getElementById('admin-phone').value.trim();
+  let   sid = document.getElementById('admin-staffid').value.trim();
+
+  if (!fn || !ln) { log('❌ First name and last name are required.', 'error'); return; }
+
+  try {
+    // Auto-generate staff ID if blank
+    if (!sid) {
+      const snap = await db.collection('staff').orderBy('id', 'desc').limit(1).get();
+      let nextNum = 1;
+      if (!snap.empty) {
+        const lastId = snap.docs[0].id;
+        const num = parseInt(lastId.replace('STF', ''));
+        if (!isNaN(num)) nextNum = num + 1;
+      }
+      sid = 'STF' + String(nextNum).padStart(3, '0');
+    }
+
+    log('Creating staff document: staff/' + sid + ' ...', 'info');
+    await db.collection('staff').doc(sid).set({
+      id:         sid,
+      first_name: fn,
+      last_name:  ln,
+      position:   pos,
+      department: 'Procurement',
+      email:      user.email,
+      phone:      ph || '',
+      status:     'Active',
+      created_at: new Date().toISOString(),
+    });
+    log('✅ staff/' + sid + ' created.', 'success');
+
+    log('Creating users document: users/' + user.uid + ' ...', 'info');
+    await db.collection('users').doc(user.uid).set({
+      role:     role,
+      personId: sid,
+      name:     fn + ' ' + ln,
+      email:    user.email,
+    });
+    log('✅ users/' + user.uid + ' created with role: ' + role, 'success');
+    log('🎉 Admin/Staff profile setup complete! You can now log in normally.', 'success');
+  } catch (err) {
+    log('❌ Error: ' + err.message + ' (code: ' + err.code + ')', 'error');
+    if (err.code === 'permission-denied') {
+      log('⚠️  Firestore security rules are blocking writes. Go to Firebase Console → Firestore → Rules and temporarily set: allow read, write: if true; then re-run. Remember to restore rules after setup!', 'warn');
+    }
+  }
+}
+
+// ─── Step 3: Create SA Profile ────────────────────────────────
+async function createSAProfile() {
+  const saEmail = document.getElementById('sa-email').value.trim();
+  const saPass  = document.getElementById('sa-password').value;
+  const fn      = document.getElementById('sa-fname').value.trim();
+  const ln      = document.getElementById('sa-lname').value.trim();
+  const stnum   = document.getElementById('sa-stnum').value.trim();
+  const phone   = document.getElementById('sa-phone').value.trim();
+  const dutyhrs = parseInt(document.getElementById('sa-dutyhrs').value) || 5;
+  let   saId    = document.getElementById('sa-id').value.trim();
+
+  if (!saEmail || !saPass || !fn || !ln) {
+    log('❌ SA Email, password, first name, and last name are required.', 'error'); return;
+  }
+
+  // Default SA ID from email prefix if blank
+  if (!saId) {
+    saId = saEmail.split('@')[0];
+  }
+
+  log('Temporarily signing in as SA: ' + saEmail + ' ...', 'info');
+  try {
+    const saCred = await auth.signInWithEmailAndPassword(saEmail, saPass);
+    const saUid  = saCred.user.uid;
+    log('✅ SA signed in. UID: ' + saUid, 'success');
+
+    // Create studentAssistants doc
+    log('Creating studentAssistants/' + saId + ' ...', 'info');
+    await db.collection('studentAssistants').doc(saId).set({
+      id:          saId,
+      first_name:  fn,
+      last_name:   ln,
+      student_no:  stnum || saId,
+      email:       saEmail,
+      phone:       phone || '',
+      duty_hrs_per_week: dutyhrs,
+      department:  'Procurement',
+      status:      'Active',
+      created_at:  new Date().toISOString(),
+    });
+    log('✅ studentAssistants/' + saId + ' created.', 'success');
+
+    // Create users doc
+    log('Creating users/' + saUid + ' ...', 'info');
+    await db.collection('users').doc(saUid).set({
+      role:     'sa',
+      personId: saId,
+      name:     fn + ' ' + ln,
+      email:    saEmail,
+    });
+    log('✅ users/' + saUid + ' created with role: sa', 'success');
+
+    // Sign back in as admin
+    log('Signing back in as admin (' + adminEmail + ') ...', 'info');
+    await auth.signInWithEmailAndPassword(adminEmail, adminPassword);
+    log('✅ Back to admin session.', 'success');
+    log('🎉 SA profile for ' + fn + ' ' + ln + ' (' + saId + ') is ready!', 'success');
+
+  } catch (err) {
+    log('❌ Error: ' + err.message + ' (code: ' + err.code + ')', 'error');
+    if (err.code === 'permission-denied') {
+      log('⚠️  Firestore security rules are blocking writes. Temporarily set: allow read, write: if true; in Firebase Console → Firestore → Rules', 'warn');
+    }
+    // Try to restore admin session
+    if (adminEmail && adminPassword) {
+      try {
+        await auth.signInWithEmailAndPassword(adminEmail, adminPassword);
+        log('✅ Restored admin session.', 'info');
+      } catch (_) {}
+    }
+  }
+}
+
+// ─── Step 4: Verify ───────────────────────────────────────────
+async function verifySetup() {
+  const user = auth.currentUser;
+  if (!user) { log('❌ Please sign in first.', 'error'); return; }
+
+  log('--- Verifying Firestore setup ---', 'info');
+  try {
+    // Check users collection
+    const usersSnap = await db.collection('users').get();
+    log('users collection: ' + usersSnap.size + ' document(s)', 'info');
+    usersSnap.forEach(doc => {
+      const d = doc.data();
+      log('  ✔ users/' + doc.id + ' → role: ' + d.role + ', personId: ' + d.personId, 'success');
+    });
+
+    // Check studentAssistants
+    const saSnap = await db.collection('studentAssistants').get();
+    log('studentAssistants collection: ' + saSnap.size + ' document(s)', 'info');
+    saSnap.forEach(doc => {
+      const d = doc.data();
+      log('  ✔ studentAssistants/' + doc.id + ' → ' + d.first_name + ' ' + d.last_name, 'success');
+    });
+
+    // Check staff
+    const staffSnap = await db.collection('staff').get();
+    log('staff collection: ' + staffSnap.size + ' document(s)', 'info');
+    staffSnap.forEach(doc => {
+      const d = doc.data();
+      log('  ✔ staff/' + doc.id + ' → ' + d.first_name + ' ' + d.last_name + ' (' + d.role + ')', 'success');
+    });
+
+    log('--- Verification complete ---', 'info');
+    if (usersSnap.size > 0) {
+      log('✅ Setup looks good! You can now log in at index.html. Remember to delete setup.html from Netlify!', 'success');
+    } else {
+      log('⚠️ No user profiles found yet. Complete Steps 2 and 3 first.', 'warn');
+    }
+  } catch (err) {
+    log('❌ Verification error: ' + err.message + ' (code: ' + err.code + ')', 'error');
+  }
+}
+</script>
+
+</body>
+</html>

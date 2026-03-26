@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SA DTR Admin — Procurement</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="page-admin">
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(37,99,235,0.2);border-top-color:var(--primary);display:block;"></div>
+    <p class="loading-text">Loading admin panel...</p>
+  </div>
+
+  <!-- Animated Background -->
+  <div class="bg-container">
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+  </div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-wrap">
+        <img src="logo.png" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
+      </div>
+      <h2 class="sidebar-title">SA DTR<br>PROCUREMENT</h2>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Monitoring</div>
+      <a class="nav-item active" data-view="dashboard"     onclick="showView('dashboard')">
+        <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
+      </a>
+      <a class="nav-item" data-view="all-records"          onclick="showView('all-records')">
+        <span class="nav-icon">📋</span><span class="nav-text">All DTR Records</span>
+      </a>
+      <a class="nav-item" data-view="sa-records"           onclick="showView('sa-records')">
+        <span class="nav-icon">👨‍🎓</span><span class="nav-text">SA Records</span>
+      </a>
+      <a class="nav-item" data-view="staff-records"        onclick="showView('staff-records')">
+        <span class="nav-icon">🏢</span><span class="nav-text">Staff Records</span>
+      </a>
+
+      <div class="nav-section-label">Management</div>
+      <a class="nav-item" data-view="student-assistants"   onclick="showView('student-assistants')">
+        <span class="nav-icon">👥</span><span class="nav-text">Student Assistants</span>
+      </a>
+      <a class="nav-item" data-view="procurement-staff"    onclick="showView('procurement-staff')">
+        <span class="nav-icon">🏛️</span><span class="nav-text">Procurement Staff</span>
+      </a>
+
+      <div class="nav-section-label">Tools</div>
+      <a class="nav-item" data-view="reports"              onclick="showView('reports')">
+        <span class="nav-icon">📈</span><span class="nav-text">Reports</span>
+      </a>
+      <a class="nav-item" onclick="window.location.href='sa-dtr-checkin.html'">
+        <span class="nav-icon">🕐</span><span class="nav-text">My Check-In</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-profile">
+        <div class="admin-avatar" id="sidebar-avatar">P</div>
+        <div class="admin-info">
+          <div class="admin-name" id="sidebar-name">Loading...</div>
+          <div class="admin-role" id="sidebar-role">Staff</div>
+        </div>
+      </div>
+      <button class="btn-logout-sidebar" onclick="handleLogout()">← Logout</button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <header class="dashboard-header">
+      <div>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+        <p class="page-subtitle">Procurement — Real-Time DTR Monitoring</p>
+      </div>
+      <div class="header-right">
+        <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+        <div class="date-time" id="clock"></div>
+        <button class="btn-refresh" onclick="refreshAll()">🔄 Refresh</button>
+      </div>
+    </header>
+
+    <!-- ══════ VIEW: DASHBOARD ══════ -->
+    <div id="dashboard-view" class="view-container active">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card stat-primary">
+          <div class="stat-header"><span class="stat-icon">🟢</span><span class="stat-trend up">Today</span></div>
+          <div class="stat-value" id="stat-on-duty">0</div>
+          <div class="stat-label">Currently On Duty</div>
+          <div class="stat-footer" id="stat-on-duty-sub">—</div>
+        </div>
+        <div class="stat-card stat-success">
+          <div class="stat-header"><span class="stat-icon">👥</span><span class="stat-trend neutral">Total</span></div>
+          <div class="stat-value" id="stat-total-people">0</div>
+          <div class="stat-label">Registered (SA + Staff)</div>
+          <div class="stat-footer" id="stat-total-sub">—</div>
+        </div>
+        <div class="stat-card stat-warning">
+          <div class="stat-header"><span class="stat-icon">📅</span><span class="stat-trend neutral">This Month</span></div>
+          <div class="stat-value" id="stat-month-hours">0</div>
+          <div class="stat-label">Total Hours Logged</div>
+          <div class="stat-footer" id="stat-month-sub">—</div>
+        </div>
+        <div class="stat-card stat-info">
+          <div class="stat-header"><span class="stat-icon">⏱️</span><span class="stat-trend neutral">Today</span></div>
+          <div class="stat-value" id="stat-today-count">0</div>
+          <div class="stat-label">DTR Records Today</div>
+          <div class="stat-footer" id="stat-today-sub">—</div>
+        </div>
+      </div>
+
+      <!-- Live Panels -->
+      <div class="dashboard-row">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🟢 Currently On Duty</span>
+            <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+          </div>
+          <div class="live-list" id="live-on-duty-list">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">✅ Completed Today</span>
+            <span id="completed-count" class="badge badge-completed">0</span>
+          </div>
+          <div class="live-list" id="completed-today-list">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: ALL DTR RECORDS ══════ -->
+    <div id="all-records-view" class="view-container">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📋 All DTR Records</span>
+          <div class="panel-actions">
+            <input type="date"   id="filter-date"        class="filter-select" onchange="loadAllRecords()" title="Filter records by date">
+            <select             id="filter-person-type" class="filter-select" onchange="loadAllRecords()" title="Filter by person type">
+              <option value="">All Types</option>
+              <option value="sa">Student Assistants</option>
+              <option value="staff">Staff</option>
+            </select>
+            <select             id="filter-status"      class="filter-select" onchange="loadAllRecords()" title="Filter by status">
+              <option value="">All Status</option>
+              <option value="On Duty">On Duty</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <button class="btn-panel btn-blue" onclick="exportCSV()">📥 Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th><th>Type</th><th>ID</th><th>Shift</th>
+                <th>Time In</th><th>Time Out</th><th>Hours</th><th>Late</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="all-records-tbody">
+              <tr><td colspan="10" style="text-align:center;color:var(--text-dim)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: SA RECORDS ══════ -->
+    <div id="sa-records-view" class="view-container">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">👨‍🎓 Student Assistant DTR Records</span>
+          <div class="panel-actions">
+            <input type="text" id="sa-filter-month" class="filter-select" placeholder="YYYY-MM" title="Enter month in YYYY-MM format" onchange="loadSARecords()">
+            <input type="text"  id="sa-filter-name"  class="search-input"  placeholder="Search name/ID..." oninput="filterSATable()">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>SA ID</th><th>Name</th><th>Shift</th><th>Date</th><th>Time In</th><th>Time Out</th><th>Hours</th><th>Late</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="sa-records-tbody">
+              <tr><td colspan="10" style="text-align:center;color:var(--text-dim)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: STAFF RECORDS ══════ -->
+    <div id="staff-records-view" class="view-container">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">🏢 Procurement Staff DTR Records</span>
+          <div class="panel-actions">
+            <input type="text" id="staff-filter-month" class="filter-select" placeholder="YYYY-MM" title="Enter month in YYYY-MM format" onchange="loadStaffDTRRecords()">
+            <input type="text"  id="staff-filter-name"  class="search-input"  placeholder="Search name/ID..." oninput="filterStaffTable()">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Staff ID</th><th>Name</th><th>Shift</th><th>Date</th><th>Time In</th><th>Time Out</th><th>Hours</th><th>Late</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="staff-records-tbody">
+              <tr><td colspan="10" style="text-align:center;color:var(--text-dim)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: STUDENT ASSISTANTS ══════ -->
+    <div id="student-assistants-view" class="view-container">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">👥 Student Assistants</span>
+          <div class="panel-actions">
+            <input type="text" id="sa-search" class="search-input" placeholder="Search..." oninput="filterSAList()">
+            <button class="btn-panel btn-green" onclick="openAddSAModal()">+ Add SA</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Student No.</th><th>Email</th><th>Duty Hrs</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="sa-list-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-dim)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: PROCUREMENT STAFF ══════ -->
+    <div id="procurement-staff-view" class="view-container">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">🏛️ Procurement Staff Accounts</span>
+          <div class="panel-actions">
+            <input type="text" id="pstaff-search" class="search-input" placeholder="Search..." oninput="filterStaffList()">
+            <button class="btn-panel btn-green" onclick="openAddStaffModal()">+ Add Staff</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Staff ID</th><th>Name</th><th>Position</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="staff-list-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-dim)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ VIEW: REPORTS ══════ -->
+    <div id="reports-view" class="view-container">
+      <div class="dashboard-row">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📊 Monthly SA Summary</span></div>
+          <div id="sa-monthly-summary"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📊 Monthly Staff Summary</span></div>
+          <div id="staff-monthly-summary"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📥 Export Reports</span>
+          <div class="panel-actions">
+            <input type="text" id="export-month" class="filter-select" placeholder="YYYY-MM" title="Enter month in YYYY-MM format">
+            <button class="btn-panel btn-blue"  onclick="exportMonthlyCSV('sa')">Export SA CSV</button>
+            <button class="btn-panel btn-blue"  onclick="exportMonthlyCSV('staff')">Export Staff CSV</button>
+            <button class="btn-panel btn-green" onclick="exportMonthlyCSV('all')">Export All CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══ MODAL: Admin Force Checkout ══ -->
+  <div class="modal" id="checkout-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">⏱️ Admin Force Checkout</span>
+        <button class="modal-close" onclick="closeModal('checkout-modal')">✕</button>
+      </div>
+      <p style="color:var(--text-dim);margin-bottom:0.75rem;font-size:0.9rem">Checking out this person on their behalf:</p>
+      <div class="info-box" id="checkout-info-box"></div>
+      <div class="modal-footer">
+        <button class="btn-modal-primary"   onclick="confirmAdminCheckout()">✓ Confirm Checkout</button>
+        <button class="btn-modal-secondary" onclick="closeModal('checkout-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Add Student Assistant ══ -->
+  <div class="modal" id="add-sa-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">+ Add Student Assistant</span>
+        <button class="modal-close" onclick="closeModal('add-sa-modal')">✕</button>
+      </div>
+      <div class="modal-form">
+        <div class="form-group"><label>First Name</label>    <input type="text"     id="sa-fname"    class="form-input-modal" placeholder="First name"></div>
+        <div class="form-group"><label>Last Name</label>     <input type="text"     id="sa-lname"    class="form-input-modal" placeholder="Last name"></div>
+        <div class="form-group"><label>Student Number</label><input type="text"     id="sa-stnum"    class="form-input-modal" placeholder="e.g. 2021-12345"></div>
+        <div class="form-group"><label>Email</label>         <input type="email"    id="sa-email"    class="form-input-modal" placeholder="student@s.ubaguio.edu"></div>
+        <div class="form-group"><label>Phone</label>         <input type="text"     id="sa-phone"    class="form-input-modal" placeholder="+63 9XX XXX XXXX"></div>
+        <div class="form-group"><label>Duty Hours/Week</label><input type="number"  id="sa-duty-hrs" class="form-input-modal" value="5" min="1" max="40" title="Duty hours per week"></div>
+        <div class="form-group"><label>Login Password</label><input type="password" id="sa-pass"     class="form-input-modal" placeholder="Set login password"></div>
+        <p style="font-size:0.8rem;color:var(--warning);margin-top:0.5rem">⚠️ An account will be created in Firebase Auth with the given email & password.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-primary"   onclick="addSA()">+ Create SA Account</button>
+        <button class="btn-modal-secondary" onclick="closeModal('add-sa-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Add Procurement Staff ══ -->
+  <div class="modal" id="add-staff-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">+ Add Procurement Staff</span>
+        <button class="modal-close" onclick="closeModal('add-staff-modal')">✕</button>
+      </div>
+      <div class="modal-form">
+        <div class="form-group"><label>First Name</label>      <input type="text"     id="staff-fname"    class="form-input-modal" placeholder="First name"></div>
+        <div class="form-group"><label>Last Name</label>       <input type="text"     id="staff-lname"    class="form-input-modal" placeholder="Last name"></div>
+        <div class="form-group"><label>Position / Title</label><input type="text"     id="staff-position" class="form-input-modal" placeholder="e.g. Administrative Staff"></div>
+        <div class="form-group"><label>Email</label>           <input type="email"    id="staff-email"    class="form-input-modal" placeholder="staff@ubaguio.edu"></div>
+        <div class="form-group"><label>Phone</label>           <input type="text"     id="staff-phone"    class="form-input-modal" placeholder="+63 9XX XXX XXXX"></div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="staff-role" class="form-input-modal" title="Select staff role">
+            <option value="staff">Staff (Can monitor, can check-in)</option>
+            <option value="admin">Admin (Full access)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Login Password</label>  <input type="password" id="staff-pass"     class="form-input-modal" placeholder="Set login password"></div>
+        <p style="font-size:0.8rem;color:var(--warning);margin-top:0.5rem">⚠️ An account will be created in Firebase Auth with the given email & password. Staff creation requires Firebase Admin SDK in production for security.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-primary"   onclick="addStaff()">+ Create Staff Account</button>
+        <button class="btn-modal-secondary" onclick="closeModal('add-staff-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase Config (shared) -->
+  <script src="firebase.config.js"></script>
+
+  <!-- Page Script -->
+  <script src="admin.script.js"></script>
+
+</body>
+</html>
